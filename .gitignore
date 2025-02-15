@@ -52,3 +52,7 @@ coverage.xml
 .env.local 
 nginx/certs/fullchain.pem
 nginx/certs/privkey.pem
+deploy/docker/nginx/ssl/fullchain.pem
+deploy/docker/nginx/ssl/privkey.pem
+deploy/docker/nginx/auth/.htpasswd
+deploy/docker/nginx/auth/credentials.txt

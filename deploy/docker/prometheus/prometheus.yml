@@ -1,0 +1,24 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  - job_name: 'webhook-service'
+    static_configs:
+      - targets: ['webhook_service:8000']
+
+  - job_name: 'oauth-service'
+    static_configs:
+      - targets: ['oauth_service:8001']
+
+  - job_name: 'logger-service'
+    static_configs:
+      - targets: ['logger_service:8002']
+
+  - job_name: 'integration-service'
+    static_configs:
+      - targets: ['integration_service:8003'] 

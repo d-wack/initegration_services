@@ -26,6 +26,8 @@ class BaseServiceSettings(BaseSettings):
         env_file=".env",
         env_file_encoding="utf-8",
         case_sensitive=True,
+        env_prefix="",
+        use_enum_values=True
     )
 
     # General settings
@@ -134,8 +136,4 @@ class BaseServiceSettings(BaseSettings):
             "enabled": True,
             "requests": self.rate_limit_requests,
             "period": self.rate_limit_period,
-        }
-
-    class Config:
-        env_prefix = ""
-        use_enum_values = True 
+        } 

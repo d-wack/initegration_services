@@ -1,53 +1,47 @@
-services:
-  nginx:
-    image: nginx:latest
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./nginx/conf.d:/etc/nginx/conf.d
-      - ./nginx/ssl:/etc/nginx/ssl
-    depends_on:
-      - webhook_service
-      - oauth_service
-      - logger_service
-      - integration_service
+version: '3.8'
+name: slicedhealth
 
+services:
   webhook_service:
     build:
-      context: ../../services/webhook_service
-      dockerfile: Dockerfile
+      context: ../..
+      dockerfile: services/webhook_service/Dockerfile
     environment:
-      - DATABASE_URL=${WEBHOOK_DB_URL:-sqlite:///data/webhooks.db}
-      - DATABASE_TYPE=${WEBHOOK_DB_TYPE:-sqlite}
-      - QUEUE_TYPE=${WEBHOOK_QUEUE_TYPE:-database}
+      - DATABASE_URL=${WEBHOOK_DB_URL:-postgresql://admin:adminpassword@postgres:5432/webhooks}
+      - DATABASE_TYPE=${WEBHOOK_DB_TYPE:-postgres}
+      - QUEUE_TYPE=${WEBHOOK_QUEUE_TYPE:-redis}
+      - REDIS_URL=redis://:${REDIS_PASSWORD:-redispassword}@redis:6379/0
       - LOG_LEVEL=${LOG_LEVEL:-INFO}
     volumes:
       - webhook_data:/data
     depends_on:
       - logger_service
+    networks:
+      - integration_network
 
   oauth_service:
     build:
-      context: ../../services/oauth_service
-      dockerfile: Dockerfile
+      context: ../..
+      dockerfile: services/oauth_service/Dockerfile
     environment:
-      - DATABASE_URL=${OAUTH_DB_URL:-sqlite:///data/oauth.db}
-      - DATABASE_TYPE=${OAUTH_DB_TYPE:-sqlite}
+      - DATABASE_URL=${OAUTH_DB_URL:-postgresql://admin:adminpassword@postgres:5432/oauth}
+      - DATABASE_TYPE=${OAUTH_DB_TYPE:-postgres}
       - ENCRYPTION_KEY=${OAUTH_ENCRYPTION_KEY}
       - LOG_LEVEL=${LOG_LEVEL:-INFO}
     volumes:
       - oauth_data:/data
     depends_on:
       - logger_service
+    networks:
+      - integration_network
 
   logger_service:
     build:
-      context: ../../services/logger_service
-      dockerfile: Dockerfile
+      context: ../..
+      dockerfile: services/logger_service/Dockerfile
     environment:
-      - STORAGE_TYPE=${LOG_STORAGE_TYPE:-file}
-      - DATABASE_URL=${LOG_DB_URL:-sqlite:///data/logs.db}
+      - STORAGE_TYPE=${LOG_STORAGE_TYPE:-postgres}
+      - DATABASE_URL=${LOG_DB_URL:-postgresql://admin:adminpassword@postgres:5432/logs}
       - FILE_PATH=${LOG_FILE_PATH:-/data/logs}
       - GRAFANA_API_KEY=${GRAFANA_API_KEY:-}
       - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID:-}
@@ -55,11 +49,13 @@ services:
       - LOG_LEVEL=${LOG_LEVEL:-INFO}
     volumes:
       - logger_data:/data
+    networks:
+      - integration_network
 
   integration_service:
     build:
-      context: ../../services/integration_service
-      dockerfile: Dockerfile
+      context: ../..
+      dockerfile: services/integration_service/Dockerfile
     environment:
       - MONDAY_API_URL=${MONDAY_API_URL}
       - HUBSPOT_API_URL=${HUBSPOT_API_URL}
@@ -68,8 +64,15 @@ services:
       - webhook_service
       - oauth_service
       - logger_service
+    networks:
+      - integration_network
 
 volumes:
   webhook_data:
   oauth_data:
-  logger_data: 
+  logger_data:
+
+networks:
+  integration_network:
+    name: integration_network
+    external: true 

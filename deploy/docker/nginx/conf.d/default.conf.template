@@ -1,0 +1,23 @@
+server {
+    listen 80;
+    listen [::]:80;
+    server_name _;
+
+    # Let's Encrypt challenge response location
+    location /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+        try_files $uri =404;
+    }
+
+    # Allow health check on HTTP
+    location /health {
+        access_log off;
+        add_header Content-Type application/json;
+        return 200 '{"status":"healthy"}';
+    }
+
+    # Redirect all other HTTP requests to HTTPS
+    location / {
+        return 301 https://$host$request_uri;
+    }
+} 
