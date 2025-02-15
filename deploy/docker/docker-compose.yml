@@ -1,0 +1,75 @@
+services:
+  nginx:
+    image: nginx:latest
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./nginx/ssl:/etc/nginx/ssl
+    depends_on:
+      - webhook_service
+      - oauth_service
+      - logger_service
+      - integration_service
+
+  webhook_service:
+    build:
+      context: ../../services/webhook_service
+      dockerfile: Dockerfile
+    environment:
+      - DATABASE_URL=${WEBHOOK_DB_URL:-sqlite:///data/webhooks.db}
+      - DATABASE_TYPE=${WEBHOOK_DB_TYPE:-sqlite}
+      - QUEUE_TYPE=${WEBHOOK_QUEUE_TYPE:-database}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+    volumes:
+      - webhook_data:/data
+    depends_on:
+      - logger_service
+
+  oauth_service:
+    build:
+      context: ../../services/oauth_service
+      dockerfile: Dockerfile
+    environment:
+      - DATABASE_URL=${OAUTH_DB_URL:-sqlite:///data/oauth.db}
+      - DATABASE_TYPE=${OAUTH_DB_TYPE:-sqlite}
+      - ENCRYPTION_KEY=${OAUTH_ENCRYPTION_KEY}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+    volumes:
+      - oauth_data:/data
+    depends_on:
+      - logger_service
+
+  logger_service:
+    build:
+      context: ../../services/logger_service
+      dockerfile: Dockerfile
+    environment:
+      - STORAGE_TYPE=${LOG_STORAGE_TYPE:-file}
+      - DATABASE_URL=${LOG_DB_URL:-sqlite:///data/logs.db}
+      - FILE_PATH=${LOG_FILE_PATH:-/data/logs}
+      - GRAFANA_API_KEY=${GRAFANA_API_KEY:-}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID:-}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY:-}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+    volumes:
+      - logger_data:/data
+
+  integration_service:
+    build:
+      context: ../../services/integration_service
+      dockerfile: Dockerfile
+    environment:
+      - MONDAY_API_URL=${MONDAY_API_URL}
+      - HUBSPOT_API_URL=${HUBSPOT_API_URL}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+    depends_on:
+      - webhook_service
+      - oauth_service
+      - logger_service
+
+volumes:
+  webhook_data:
+  oauth_data:
+  logger_data: 

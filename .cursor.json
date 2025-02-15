@@ -1,0 +1,49 @@
+{
+    "projectType": "python",
+    "formatOnSave": true,
+    "lintOnSave": true,
+    "pythonPath": "${workspaceFolder}/venv/bin/python",
+    "pythonFormatter": "black",
+    "pythonLinter": "flake8",
+    "search": {
+        "excludeDirectories": [
+            "venv",
+            "__pycache__",
+            "build",
+            "dist",
+            ".pytest_cache",
+            "htmlcov",
+            ".git"
+        ],
+        "excludeFiles": [
+            "*.pyc",
+            "*.pyo",
+            "*.pyd",
+            ".coverage",
+            "coverage.xml",
+            ".env",
+            ".env.*"
+        ]
+    },
+    "editor": {
+        "tabSize": 4,
+        "insertSpaces": true,
+        "rulers": [88],
+        "trimTrailingWhitespace": true,
+        "insertFinalNewline": true
+    },
+    "python": {
+        "analysis": {
+            "typeCheckingMode": "basic",
+            "autoSearchPaths": true,
+            "useLibraryCodeForTypes": true,
+            "diagnosticMode": "workspace"
+        },
+        "testing": {
+            "pytestEnabled": true,
+            "unittestEnabled": false,
+            "nosetestsEnabled": false,
+            "autoTestDiscoverOnSaveEnabled": true
+        }
+    }
+} 

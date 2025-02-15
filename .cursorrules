@@ -1,0 +1,522 @@
+# Python Logging Service Rules
+
+# Import rules
+rule "organize_imports" {
+    match "*.py"
+    on_save true
+    action {
+        organize_imports
+        format_code
+    }
+}
+
+# Docstring rules
+rule "docstring_class" {
+    match "class *:"
+    insert_after """
+    \"\"\"
+    ${1:Class description}
+
+    Attributes:
+        ${2:attribute_name} (${3:type}): ${4:description}
+    \"\"\"
+    """
+}
+
+rule "docstring_function" {
+    match "def *[(]*[)]:"
+    insert_after """
+    \"\"\"
+    ${1:Function description}
+
+    Args:
+        ${2:param_name} (${3:type}): ${4:parameter description}
+
+    Returns:
+        ${5:type}: ${6:return value description}
+
+    Raises:
+        ${7:Exception}: ${8:exception description}
+    \"\"\"
+    """
+}
+
+# Logging rules
+rule "add_logger" {
+    match "class *:"
+    insert_after """
+    logger = logging.getLogger(__name__)
+    """
+}
+
+snippet "logd" "Add debug log" {
+    prefix "logd"
+    body "logger.debug(f\"${1:message}\")"
+}
+
+snippet "logi" "Add info log" {
+    prefix "logi"
+    body "logger.info(f\"${1:message}\")"
+}
+
+snippet "logw" "Add warning log" {
+    prefix "logw"
+    body "logger.warning(f\"${1:message}\")"
+}
+
+snippet "loge" "Add error log" {
+    prefix "loge"
+    body "logger.error(f\"${1:message}\", exc_info=True)"
+}
+
+# Testing rules
+rule "test_function" {
+    match "def test_*"
+    insert_after """
+    \"\"\"
+    Test case: ${1:description of test case}
+
+    Given: ${2:initial conditions}
+    When: ${3:action performed}
+    Then: ${4:expected outcome}
+    \"\"\"
+    """
+}
+
+snippet "pytest_fixture" "Add pytest fixture" {
+    prefix "fixture"
+    body """
+@pytest.fixture
+def ${1:fixture_name}():
+    \"\"\"${2:Fixture description}\"\"\"
+    ${3:# Setup code}
+    yield ${4:fixture_value}
+    ${5:# Teardown code}
+"""
+}
+
+# Error handling rules
+snippet "try_except" "Add try-except block with logging" {
+    prefix "trylog"
+    body """
+try:
+    ${1:# Code that might raise an exception}
+except ${2:Exception} as e:
+    logger.error(f"${3:Error message}: {str(e)}", exc_info=True)
+    ${4:# Error handling code}
+"""
+}
+
+# Configuration rules
+snippet "env_var" "Add environment variable with type hint" {
+    prefix "envvar"
+    body """
+${1:VAR_NAME}: ${2:str} = os.getenv("${1:VAR_NAME}", "${3:default_value}")
+"""
+}
+
+# Type hint rules
+rule "enforce_type_hints" {
+    match "def *[(]*[)]:"
+    require "-> *:"
+    message "Function is missing return type hint"
+}
+
+# Documentation rules
+snippet "todo" "Add TODO comment with date" {
+    prefix "todo"
+    body "# TODO(${1:username}): ${2:description} (${3:$(date +%Y-%m-%d)})"
+}
+
+# Testing snippets
+snippet "mock_logger" "Add mock logger for testing" {
+    prefix "mocklog"
+    body """
+@pytest.fixture
+def mock_logger(mocker):
+    \"\"\"Mock logger for testing.\"\"\"
+    return mocker.patch("logging.getLogger")
+"""
+}
+
+# Docker related
+snippet "docker_env" "Add Docker environment variable" {
+    prefix "denv"
+    body "ENV ${1:VAR_NAME}=${2:value}"
+}
+
+# Performance monitoring
+snippet "perf_timer" "Add performance timing decorator" {
+    prefix "perftime"
+    body """
+def timer(func):
+    \"\"\"Decorator to measure function execution time.\"\"\"
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        start_time = time.perf_counter()
+        result = func(*args, **kwargs)
+        end_time = time.perf_counter()
+        logger.info(f"{func.__name__} took {end_time - start_time:.4f} seconds to execute")
+        return result
+    return wrapper
+"""
+}
+
+# Health check
+snippet "health_check" "Add health check endpoint" {
+    prefix "healthcheck"
+    body """
+@app.route("/health")
+def health_check():
+    \"\"\"Health check endpoint.\"\"\"
+    return jsonify({"status": "healthy", "timestamp": datetime.utcnow().isoformat()})
+"""
+}
+
+# Code Reuse and Documentation Rules
+rule "new_file_check" {
+    match "# New File:"
+    require """
+    # Code Reuse Check:
+    # 1. Searched codebase for similar functionality: [Yes/No]
+    # 2. Existing files checked: [List files]
+    # 3. Reason for new file: [Explanation]
+    # 4. Related files: [List related files]
+    """
+    message "Please document your code reuse check before creating a new file"
+}
+
+rule "new_function_check" {
+    match "def new_*"
+    require """
+    # Function Reuse Check:
+    # 1. Similar functions searched: [Yes/No]
+    # 2. Existing implementations checked: [List functions]
+    # 3. Reason for new implementation: [Explanation]
+    """
+    message "Please document your function reuse check before creating a new function"
+}
+
+snippet "reuse_check" "Add code reuse documentation" {
+    prefix "reusecheck"
+    body """
+# Code Reuse Check:
+# 1. Searched codebase for similar functionality: ${1:Yes/No}
+# 2. Existing files checked: 
+#    - ${2:file_path}
+# 3. Reason for new file/function: 
+#    ${3:explanation}
+# 4. Related files:
+#    - ${4:related_file_paths}
+"""
+}
+
+# Security Best Practices
+rule "check_sensitive_data" {
+    match "password|secret|key|token"
+    require """
+    # Security Check:
+    # 1. No sensitive data in plaintext: [Yes/No]
+    # 2. Using environment variables: [Yes/No]
+    # 3. Logging sanitized: [Yes/No]
+    # 4. Access controls implemented: [Yes/No]
+    """
+    message "Please verify security measures for sensitive data"
+}
+
+snippet "secure_config" "Add secure configuration handling" {
+    prefix "secconfig"
+    body """
+def get_secure_config(key: str, default: str | None = None) -> str:
+    \"\"\"Securely retrieve configuration value.
+    
+    Args:
+        key: Configuration key to retrieve
+        default: Optional default value
+        
+    Returns:
+        str: Configuration value
+        
+    Raises:
+        ConfigurationError: If required key is missing
+    \"\"\"
+    value = os.getenv(key, default)
+    if value is None:
+        logger.error(f"Missing required configuration: {key}")
+        raise ConfigurationError(f"Missing required configuration: {key}")
+    return value
+"""
+}
+
+# Error Handling Best Practices
+rule "custom_exception" {
+    match "class *Error[(]*[)]:"
+    require """
+    \"\"\"
+    Custom exception for ${1:specific} errors.
+
+    Attributes:
+        message (str): Error message
+        code (int): Error code
+        details (dict): Additional error details
+    \"\"\"
+    """
+}
+
+snippet "error_handler" "Add error handler with logging" {
+    prefix "errhandler"
+    body """
+@app.errorhandler(${1:Exception})
+def handle_error(error: ${1:Exception}) -> tuple[dict, int]:
+    \"\"\"Handle ${2:specific} errors.
+
+    Args:
+        error: The error that occurred
+
+    Returns:
+        tuple[dict, int]: Error response and status code
+    \"\"\"
+    error_id = str(uuid.uuid4())
+    logger.error(f"Error ID {error_id}: {str(error)}", exc_info=True)
+    
+    return {
+        "error": {
+            "id": error_id,
+            "type": error.__class__.__name__,
+            "message": str(error),
+            "status": ${3:status_code}
+        }
+    }, ${3:status_code}
+"""
+}
+
+# Performance Best Practices
+rule "check_database_query" {
+    match "SELECT|INSERT|UPDATE|DELETE"
+    require """
+    # Database Query Check:
+    # 1. Indexes used: [Yes/No]
+    # 2. Query optimized: [Yes/No]
+    # 3. Connection pooling: [Yes/No]
+    # 4. Transaction needed: [Yes/No]
+    """
+    message "Please verify database query optimization"
+}
+
+snippet "cache_decorator" "Add caching decorator" {
+    prefix "cacheme"
+    body """
+def cache_result(ttl_seconds: int = 300):
+    \"\"\"Cache function results.
+    
+    Args:
+        ttl_seconds: Time to live in seconds
+        
+    Returns:
+        Callable: Decorated function
+    \"\"\"
+    def decorator(func):
+        cache = {}
+        
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            key = str(args) + str(kwargs)
+            now = time.time()
+            
+            if key in cache:
+                result, timestamp = cache[key]
+                if now - timestamp < ttl_seconds:
+                    logger.debug(f"Cache hit for {func.__name__}")
+                    return result
+            
+            result = func(*args, **kwargs)
+            cache[key] = (result, now)
+            logger.debug(f"Cache miss for {func.__name__}")
+            return result
+        return wrapper
+    return decorator
+"""
+}
+
+# API Best Practices
+rule "api_endpoint" {
+    match "@app.route"
+    require """
+    # API Endpoint Check:
+    # 1. Input validation: [Yes/No]
+    # 2. Rate limiting: [Yes/No]
+    # 3. Authentication: [Yes/No]
+    # 4. Response format: [Standard/Custom]
+    # 5. Error handling: [Yes/No]
+    # 6. Documentation: [Yes/No]
+    """
+    message "Please verify API endpoint implementation requirements"
+}
+
+snippet "api_response" "Add standardized API response" {
+    prefix "apiresponse"
+    body """
+def create_response(
+    data: Any = None,
+    message: str = "Success",
+    status_code: int = 200,
+    metadata: dict | None = None
+) -> tuple[dict, int]:
+    \"\"\"Create standardized API response.
+
+    Args:
+        data: Response data
+        message: Response message
+        status_code: HTTP status code
+        metadata: Additional metadata
+
+    Returns:
+        tuple[dict, int]: Response body and status code
+    \"\"\"
+    response = {
+        "status": "success" if status_code < 400 else "error",
+        "message": message,
+        "data": data,
+        "metadata": metadata or {},
+        "timestamp": datetime.utcnow().isoformat()
+    }
+    return response, status_code
+"""
+}
+
+# Testing Best Practices
+rule "test_coverage" {
+    match "class Test*"
+    require """
+    # Test Coverage Check:
+    # 1. Happy path tested: [Yes/No]
+    # 2. Edge cases covered: [Yes/No]
+    # 3. Error cases handled: [Yes/No]
+    # 4. Mocks documented: [Yes/No]
+    # 5. Performance verified: [Yes/No]
+    """
+    message "Please verify test coverage requirements"
+}
+
+snippet "parametrize_test" "Add parametrized test" {
+    prefix "paramtest"
+    body """
+@pytest.mark.parametrize(
+    "${1:test_input},${2:expected}",
+    [
+        (${3:input_1}, ${4:expected_1}),
+        (${5:input_2}, ${6:expected_2}),
+    ],
+    ids=[
+        "${7:test_case_1}",
+        "${8:test_case_2}",
+    ]
+)
+def test_${9:function}(${1:test_input}, ${2:expected}):
+    \"\"\"
+    Test case: ${10:description}
+    
+    Given: Different input values
+    When: Function is called with each input
+    Then: Expected output is returned
+    \"\"\"
+    result = ${9:function}(${1:test_input})
+    assert result == ${2:expected}
+"""
+}
+
+# Monitoring Best Practices
+snippet "metric_collector" "Add metric collection" {
+    prefix "metrics"
+    body """
+def collect_metrics(
+    metric_name: str,
+    value: float,
+    tags: dict[str, str] | None = None
+) -> None:
+    \"\"\"Collect application metrics.
+    
+    Args:
+        metric_name: Name of the metric
+        value: Metric value
+        tags: Additional metric tags
+    \"\"\"
+    try:
+        tags = tags or {}
+        tags.update({
+            "environment": os.getenv("ENVIRONMENT", "development"),
+            "service": os.getenv("SERVICE_NAME", "logging-service")
+        })
+        
+        logger.info(
+            f"Metric: {metric_name}",
+            extra={
+                "metric_name": metric_name,
+                "metric_value": value,
+                "metric_tags": tags,
+                "timestamp": datetime.utcnow().isoformat()
+            }
+        )
+    except Exception as e:
+        logger.error(f"Failed to collect metric {metric_name}: {str(e)}", exc_info=True)
+"""
+}
+
+# Documentation Best Practices
+rule "module_documentation" {
+    match "# Module:"
+    require """
+    # Module: ${1:module_name}
+    \"\"\"
+    ${2:Module description}
+
+    This module follows these principles:
+    1. Single Responsibility: [Explanation]
+    2. Dependencies: [List]
+    3. Configuration: [Details]
+    4. Error Handling: [Strategy]
+    5. Performance Considerations: [Notes]
+    
+    Example:
+        >>> ${3:example_usage}
+    \"\"\"
+    """
+    message "Please provide comprehensive module documentation"
+}
+
+# Code Review Best Practices
+snippet "review_checklist" "Add code review checklist" {
+    prefix "reviewcheck"
+    body """
+# Code Review Checklist:
+# 1. Code Quality:
+#    - [ ] Follows PEP 8 style guide
+#    - [ ] Uses type hints consistently
+#    - [ ] Has comprehensive docstrings
+#    - [ ] No duplicate code
+#
+# 2. Testing:
+#    - [ ] Unit tests added/updated
+#    - [ ] Edge cases covered
+#    - [ ] Integration tests if needed
+#    - [ ] Mocks used appropriately
+#
+# 3. Security:
+#    - [ ] No sensitive data exposed
+#    - [ ] Input validation present
+#    - [ ] Error handling secure
+#    - [ ] Dependencies reviewed
+#
+# 4. Performance:
+#    - [ ] No N+1 queries
+#    - [ ] Appropriate caching
+#    - [ ] Resource usage acceptable
+#    - [ ] Scalability considered
+#
+# 5. Documentation:
+#    - [ ] Code comments clear
+#    - [ ] API docs updated
+#    - [ ] README updated if needed
+#    - [ ] Change log updated
+"""
+} 

@@ -1,0 +1,47 @@
+{
+    "name": "integration_services",
+    "description": "A production-ready Python FastAPI template with PostgreSQL, Redis, monitoring, and best practices",
+    "version": "1.0.0",
+    "variables": {
+        "project_name": {
+            "description": "Slicedhub Integration Services",
+            "default": "my_project"
+        },
+        "project_description": {
+            "description": "A short description of your project",
+            "default": "A Python FastAPI project"
+        },
+        "author": {
+            "description": "Your name or organization",
+            "default": "Your Name"
+        },
+        "email": {
+            "description": "Contact email",
+            "default": "your.email@example.com"
+        }
+    },
+    "features": {
+        "database": {
+            "postgresql": true,
+            "redis": true,
+            "mongodb": true,
+            "mysql": true
+        },
+        "monitoring": {
+            "prometheus": true,
+            "grafana": true,
+            "loki": true,
+            "promtail": true
+        },
+        "development": {
+            "docker": true,
+            "vscode": true,
+            "testing": true,
+            "linting": true,
+            "type_checking": true
+        },
+        "ci_cd": {
+            "github_actions": true
+        }
+    }
+}

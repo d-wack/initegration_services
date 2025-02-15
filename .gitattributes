@@ -1,0 +1,42 @@
+# Python source files
+*.py text diff=python
+
+# Documentation
+*.md text diff=markdown
+*.rst text
+*.txt text
+
+# Configs
+*.yml text
+*.yaml text
+*.json text
+*.toml text
+*.ini text
+.env* text
+
+# Docker
+Dockerfile text
+*.dockerfile text
+
+# Shell scripts
+*.sh text eol=lf
+*.bash text eol=lf
+
+# Binary files
+*.db binary
+*.p binary
+*.pkl binary
+*.pickle binary
+*.pyc binary
+*.pyd binary
+*.pyo binary
+
+# Images
+*.png binary
+*.jpg binary
+*.gif binary
+*.ico binary
+*.svg text
+
+# Make sure shell scripts have LF endings
+*.sh text eol=lf 
